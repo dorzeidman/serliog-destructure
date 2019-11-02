@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using SerliogTTransformer.Converter;
 using SerliogTTransformer.Property;
 using SerliogTTransformer.Transformer;
 
@@ -11,18 +12,13 @@ namespace SerliogTTransformer.Builder
     public class TypeTransformerBuilder<T> : ITypeTransformerBuilder<T>
         where T : class
     {
-        private readonly Dictionary<string, IPropertyValueConverter> _convProperties;
-        private readonly HashSet<string> _ignoreProperties;
-        private readonly Dictionary<string, Func<object, object, bool>> _ignoreFuncProperties;
-        private readonly Dictionary<string, string> _propertyNames;
         private bool _ignoreAllNulls;
+        private readonly Dictionary<PropertyInfo, PropertyTransformerBuilder> _propertyTransformers;
 
         public TypeTransformerBuilder()
         {
-            _convProperties = new Dictionary<string, IPropertyValueConverter>();
-            _ignoreProperties = new HashSet<string>();
-            _ignoreFuncProperties = new Dictionary<string, Func<object, object, bool>>();
-            _propertyNames = new Dictionary<string, string>();
+            _propertyTransformers = PropertyFinder.GetPropertiesRecursive(typeof(T))
+                .ToDictionary(x => x, x => new PropertyTransformerBuilder());
         }
 
         public ITypeTransformerBuilder<T> IgnoreAllIfNull()
@@ -33,119 +29,174 @@ namespace SerliogTTransformer.Builder
 
         public ITypeTransformerBuilder<T> Ignore(Expression<Func<T, object>> expression)
         {
-            var propertyInfo = GetPropertyInfo(expression);
-            if (!_ignoreProperties.Contains(propertyInfo.Name))
-                _ignoreProperties.Add(propertyInfo.Name);
+            var property = GetPropertyInfo(expression);
+            _propertyTransformers.Remove(property);
+
             return this;
         }
 
         public ITypeTransformerBuilder<T> Ignore(string propertyName)
         {
-            var propertyInfo = GetPropertyInfo(propertyName); 
-            if (!_ignoreProperties.Contains(propertyInfo.Name))
-                _ignoreProperties.Add(propertyInfo.Name);
+            var property = GetPropertyInfo(propertyName);
+            _propertyTransformers.Remove(property);
+
+            return this;
+        }
+
+        public ITypeTransformerBuilder<T> Ignore(Func<PropertyInfo, bool> propertyFunc)
+        {
+            var properties = GetPropertyInfos(propertyFunc).ToArray();
+            foreach (var property in properties)
+            {
+                _propertyTransformers.Remove(property);
+            }
+
             return this;
         }
 
         public ITypeTransformerBuilder<T> IgnoreIfNull(Expression<Func<T, object>> expression)
         {
-            var propertyInfo = GetPropertyInfo(expression);
-            _ignoreFuncProperties[propertyInfo.Name] = (o, p) => p == null;
-
+            UpdateProperty(expression, t => t.IgnoreFunc = (o, p) => p == null);
             return this;
         }
 
         public ITypeTransformerBuilder<T> IgnoreIfNull(string propertyName)
         {
-            var propertyInfo = GetPropertyInfo(propertyName);
-            _ignoreFuncProperties[propertyInfo.Name] = (o, p) => p == null;
-
+            UpdateProperty(propertyName, t => t.IgnoreFunc = (o, p) => p == null);
             return this;
         }
 
-        public ITypeTransformerBuilder<T> IgnoreIf(Expression<Func<T, object>> expression, Func<T, bool> func)
+        public ITypeTransformerBuilder<T> IgnoreIfNull(Func<PropertyInfo, bool> propertyFunc)
         {
-            var propertyInfo = GetPropertyInfo(expression);
-            _ignoreFuncProperties[propertyInfo.Name] = (o,p) => func((T)o);
-
+            UpdateProperties(propertyFunc, t => t.IgnoreFunc = (o, p) => p == null);
             return this;
         }
 
-        public ITypeTransformerBuilder<T> IgnoreIf(string propertyName, Func<T, bool> func)
+        public ITypeTransformerBuilder<T> IgnoreIf(Expression<Func<T, object>> expression, Func<T,object,bool> func)
         {
-            var propertyInfo = GetPropertyInfo(propertyName);
-            _ignoreFuncProperties[propertyInfo.Name] = (o, p) => func((T)o);
+            UpdateProperty(expression, t => t.IgnoreFunc = (o, p) => func((T)o,p));
+            return this;
+        }
 
+        public ITypeTransformerBuilder<T> IgnoreIf(string propertyName, Func<T,object,bool> func)
+        {
+            UpdateProperty(propertyName, t => t.IgnoreFunc = (o, p) => func((T)o, p));
+            return this;
+        }
+
+        public ITypeTransformerBuilder<T> IgnoreIf(Func<PropertyInfo, bool> propertyFunc, Func<T, object, bool> func)
+        {
+            UpdateProperties(propertyFunc, t => t.IgnoreFunc = (o, p) => func((T)o, p));
             return this;
         }
 
         public ITypeTransformerBuilder<T> Mask(Expression<Func<T, object>> expression, char mask = '*')
         {
-            var propertyInfo = GetPropertyInfo(expression);
-            _convProperties[propertyInfo.Name] = new SimpleMaskValueConverter(mask);
+            UpdateProperty(expression, t => t.ValueConverter = new SimpleMaskValueConverter(mask));
             return this;
         }
 
         public ITypeTransformerBuilder<T> Mask(string propertyName, char mask = '*')
         {
-            var propertyInfo = GetPropertyInfo(propertyName);
-            _convProperties[propertyInfo.Name] = new SimpleMaskValueConverter(mask);
+            UpdateProperty(propertyName, t => t.ValueConverter = new SimpleMaskValueConverter(mask));
+            return this;
+        }
+
+        public ITypeTransformerBuilder<T> Mask(Func<PropertyInfo, bool> propertyFunc, char mask = '*')
+        {
+            UpdateProperties(propertyFunc, t => t.ValueConverter = new SimpleMaskValueConverter(mask));
             return this;
         }
 
         public ITypeTransformerBuilder<T> Mask(Expression<Func<T, object>> expression, int showFirst, int showLast
             , char mask = '*')
         {
-            var propertyInfo = GetPropertyInfo(expression);
-            _convProperties[propertyInfo.Name] = new ComplexMaskValueConverter(mask, showFirst, showLast);
+            UpdateProperty(expression, t => t.ValueConverter 
+                = new ComplexMaskValueConverter(mask, showFirst, showLast));
             return this;
         }
 
         public ITypeTransformerBuilder<T> Mask(string propertyName, int showFirst, int showLast, char mask = '*')
         {
-            var propertyInfo = GetPropertyInfo(propertyName);
-            _convProperties[propertyInfo.Name] = new ComplexMaskValueConverter(mask, showFirst, showLast);
+            UpdateProperty(propertyName, t => t.ValueConverter
+                = new ComplexMaskValueConverter(mask, showFirst, showLast));
+            return this;
+        }
+
+        public ITypeTransformerBuilder<T> Mask(Func<PropertyInfo, bool> propertyFunc, int showFirst, int showLast, char mask = '*')
+        {
+            UpdateProperties(propertyFunc, t => t.ValueConverter
+                = new ComplexMaskValueConverter(mask, showFirst, showLast));
             return this;
         }
 
         public ITypeTransformerBuilder<T> Rename(Expression<Func<T, object>> expression, string newName)
         {
-            var propertyInfo = GetPropertyInfo(expression);
-            _propertyNames[propertyInfo.Name] = newName;
-
+            UpdateProperty(expression, t => t.ConvertedName = newName);
             return this;
         }
 
         public ITypeTransformerBuilder<T> Rename(string propertyName, string newName)
         {
-            var propertyInfo = GetPropertyInfo(propertyName);
-            _propertyNames[propertyInfo.Name] = newName;
-
+            UpdateProperty(propertyName, t => t.ConvertedName = newName);
             return this;
         }
 
-        public ITypeTransformerBuilder<T> Convert(Expression<Func<T, object>> expression, IPropertyValueConverter converter)
+        public ITypeTransformerBuilder<T> Convert(Expression<Func<T, object>> expression, 
+            IPropertyValueConverter converter)
         {
-            var propertyInfo = GetPropertyInfo(expression);
-            _convProperties[propertyInfo.Name] = converter;
+            UpdateProperty(expression, t => t.ValueConverter = converter);
             return this;
         }
 
         public ITypeTransformerBuilder<T> Convert(string propertyName, IPropertyValueConverter converter)
         {
-            var propertyInfo = GetPropertyInfo(propertyName);
-            _convProperties[propertyInfo.Name] = converter;
+            UpdateProperty(propertyName, t => t.ValueConverter = converter);
+            return this;
+        }
+
+        public ITypeTransformerBuilder<T> Convert(Func<PropertyInfo, bool> propertyFunc, IPropertyValueConverter converter)
+        {
+            UpdateProperties(propertyFunc, t => t.ValueConverter = converter);
+            return this;
+        }
+
+        public ITypeTransformerBuilder<T> Transform(Expression<Func<T, object>> expression, IPropertyTransformer transformer)
+        {
+            var property = GetPropertyInfo(expression);
+            if (_propertyTransformers.ContainsKey(property))
+                _propertyTransformers[property].Custom = transformer;
+
+            return this;
+        }
+
+        public ITypeTransformerBuilder<T> Transform(string propertyName, IPropertyTransformer transformer)
+        {
+            var property = GetPropertyInfo(propertyName);
+            if (_propertyTransformers.ContainsKey(property))
+                _propertyTransformers[property].Custom = transformer;
+
+            return this;
+        }
+
+        public ITypeTransformerBuilder<T> Transform(Func<PropertyInfo, bool> propertyFunc, IPropertyTransformer transformer)
+        {
+            var properties = GetPropertyInfos(propertyFunc).ToArray();
+            foreach (var property in properties)
+            {
+                _propertyTransformers[property].Custom = transformer;
+            }
+
             return this;
         }
 
         public TypeTransformer Build()
         {
-            var writeProperties = PropertyFinder.GetPropertiesRecursive(typeof(T))
-                .Where(x => !_ignoreProperties.Contains(x.Name))
-                .ToArray();
+            var transformerDicTemp =_propertyTransformers
+                .ToDictionary(x => x.Key, x => x.Value.Final);
 
-            return new TypeTransformer(typeof(T), writeProperties, 
-                _convProperties, _ignoreFuncProperties, _propertyNames, _ignoreAllNulls);
+            return new TypeTransformer(typeof(T), _ignoreAllNulls,
+                transformerDicTemp);
         }
 
         private PropertyInfo GetPropertyInfo(Expression<Func<T, object>> expression)
@@ -155,6 +206,11 @@ namespace SerliogTTransformer.Builder
             var property = PropertyFinder.FromExpression(expression);
             return property ?? throw new ArgumentException("Invalid Property expression", nameof(expression));
         }
+
+        private IEnumerable<PropertyInfo> GetPropertyInfos(Func<PropertyInfo, bool> propertyFunc)
+        {
+            return _propertyTransformers.Keys.Where(propertyFunc);
+        }
         
         private PropertyInfo GetPropertyInfo(string propertyName)
         {
@@ -163,6 +219,36 @@ namespace SerliogTTransformer.Builder
             return property ?? throw new ArgumentException($"Invalid PropertyName:{propertyName}", nameof(property));
         }
 
-        
+        private void UpdateProperty(Expression<Func<T, object>> expression, Action<PropertyTransformer> action)
+        {
+            var property = GetPropertyInfo(expression);
+            if(_propertyTransformers.TryGetValue(property, out var transformerBuilder))
+            {
+                action?.Invoke(transformerBuilder.Base);
+                transformerBuilder.Base.NeedDestructure = false;
+            }
+        }
+
+        private void UpdateProperty(string propertyName, Action<PropertyTransformer> action)
+        {
+            var property = GetPropertyInfo(propertyName);
+            if (_propertyTransformers.TryGetValue(property, out var transformerBuilder))
+            {
+                action?.Invoke(transformerBuilder.Base);
+                transformerBuilder.Base.NeedDestructure = false;
+            }
+        }
+
+        private void UpdateProperties(Func<PropertyInfo, bool> propertyFunc, Action<PropertyTransformer> action)
+        {
+            foreach (var property in GetPropertyInfos(propertyFunc))
+            {
+                if (_propertyTransformers.TryGetValue(property, out var transformerBuilder))
+                {
+                    action?.Invoke(transformerBuilder.Base);
+                    transformerBuilder.Base.NeedDestructure = false;
+                }
+            }
+        }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SerliogTTransformer.Property
+namespace SerliogTTransformer.Converter
 {
     public class ComplexMaskValueConverter : IPropertyValueConverter
     {

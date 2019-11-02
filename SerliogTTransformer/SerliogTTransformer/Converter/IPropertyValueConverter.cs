@@ -1,4 +1,4 @@
-﻿namespace SerliogTTransformer.Property
+﻿namespace SerliogTTransformer.Converter
 {
     public interface IPropertyValueConverter
     {

@@ -1,4 +1,4 @@
-﻿namespace SerliogTTransformer.Property
+﻿namespace SerliogTTransformer.Converter
 {
     class SimpleMaskValueConverter : IPropertyValueConverter
     {

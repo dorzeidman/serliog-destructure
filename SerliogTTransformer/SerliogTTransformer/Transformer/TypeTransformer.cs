@@ -7,63 +7,38 @@ namespace SerliogTTransformer.Transformer
 {
     public class TypeTransformer : ITypeTransformer
     {
-        private readonly PropertyInfo[] _writeProperties;
-        private readonly IDictionary<string, IPropertyValueConverter> _destProperties;
         private readonly Type _type;
-        private readonly IDictionary<string, Func<object, object, bool>> _ignoreFuncProperties;
-        private readonly IDictionary<string, string> _propertyNames;
         private readonly bool _ignoreAllNulls;
+        private readonly IDictionary<PropertyInfo, IPropertyTransformer> _propertyTransformers;
 
         public TypeTransformer(Type type,
-            PropertyInfo[] writeProperties,
-            IDictionary<string, IPropertyValueConverter> destProperties, 
-            IDictionary<string, Func<object, object, bool>> ignoreFuncProperties, 
-            IDictionary<string, string> propertyNames,
-            bool ignoreAllNulls)
+            bool ignoreAllNulls, 
+            IDictionary<PropertyInfo, IPropertyTransformer> propertyTransformers)
         {
             _type = type;
-            _destProperties = destProperties;
-            _ignoreFuncProperties = ignoreFuncProperties;
-            _propertyNames = propertyNames;
             _ignoreAllNulls = ignoreAllNulls;
-            _writeProperties = writeProperties;
+            _propertyTransformers = propertyTransformers;
         }
 
         public TransformedObject Transform(object value)
         {
-            var destObj = new TransformedObject(_type.Name, _writeProperties.Length);
+            var destObj = new TransformedObject(_type.Name, _propertyTransformers.Count);
 
-            foreach (var property in _writeProperties)
+            foreach (var item in _propertyTransformers)
             {
-                var propValue = property.GetValue(value);
-                var propName = property.Name;
-
+                var propValue = item.Key.GetValue(value);
+                
                 if (_ignoreAllNulls && propValue == null)
                     continue;
 
-                //Check Ignore Func
-                if (_ignoreFuncProperties.TryGetValue(property.Name, out var func))
-                {
-                    if (func(value, propValue))
-                        continue;
-                }
-                
-                //Check rename
-                if (_propertyNames.TryGetValue(property.Name, out var newPropName))
-                {
-                    propName = newPropName;
-                }
+                if(item.Value.Ignore(value, propValue))
+                    continue;
 
-                
-                if (propValue  != null &&
-                    _destProperties.TryGetValue(property.Name, out var destructure))
-                {
-                    destObj.Properties.Add(new DestructedProperty(propName, destructure.Convert(propValue), false));
-                }
-                else
-                {
-                    destObj.Properties.Add(new DestructedProperty(propName, propValue, true));
-                }
+                var propName = item.Value.ConvertName(item.Key.Name);
+                propValue = item.Value.ConvertValue(propValue);
+
+                destObj.Properties.Add(new DestructedProperty(propName,
+                    propValue, item.Value.NeedDestructure));
             }
 
             return destObj;

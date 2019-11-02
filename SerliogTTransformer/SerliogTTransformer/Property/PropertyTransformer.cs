@@ -1,12 +1,14 @@
 ﻿using System;
+using SerliogTTransformer.Converter;
 
 namespace SerliogTTransformer.Property
 {
-    public class BasePropertyTransformer : IPropertyTransformer
+    public class PropertyTransformer : IPropertyTransformer
     {
         public string ConvertedName { get; set; }
         public Func<object, object, bool> IgnoreFunc { get; set; } = (o, p) => false;
         public IPropertyValueConverter ValueConverter { get; set; }
+        public bool NeedDestructure { get; set; } = true;
 
         public bool Ignore(object tObject, object propertyValue)
         {
