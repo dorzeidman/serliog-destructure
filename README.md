@@ -1,4 +1,4 @@
-# serliog-struct-destructure
-Serilog Struct Destructure
+# serliog-ttransformer
+Serilog T Generic Transformer
 
 Coming soon...
