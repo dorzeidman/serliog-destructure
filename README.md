@@ -1,4 +1,4 @@
-# serliog-ttransformer [![Build status](https://ci.appveyor.com/api/projects/status/lypgm2unll1a16fk/branch/master?svg=true)]
+# serliog-ttransformer ![Build status](https://ci.appveyor.com/api/projects/status/lypgm2unll1a16fk/branch/master?svg=true)
 Serilog T Generic Transformer 
 
 This package allows to transform object logged in Serilog. You can ignore, mask, rename or write your custom transformer.
