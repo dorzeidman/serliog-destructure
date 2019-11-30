@@ -20,8 +20,7 @@ namespace SerliogTTransformer.Tests
                 .Destructure.Transform<FixtureClass2>(b => b
                     .Ignore(x => x.Double)
                     .Mask(p => p.Phone, 3, 3)
-                    .IgnoreIf(nameof(FixtureClass2.Test1), (y,p) => !y.Test1)
-                    .Rename(nameof(FixtureClass2.Double), "Double2"))
+                    .IgnoreIf(nameof(FixtureClass2.Test1), (y,p) => !y.Test1))
                 .Destructure.AsScalar<FixtureClass3>()
                 .WriteTo.Sink<SinkFixture>()
                 .CreateLogger();
@@ -85,8 +84,7 @@ namespace SerliogTTransformer.Tests
                 .Destructure.Transform<FixtureClass2>(b => b
                     .Ignore(x => x.Double)
                     .Mask(p => p.Phone, 3, 3)
-                    .IgnoreIf(nameof(FixtureClass2.Test1), (y,p) => !y.Test1)
-                    .Rename(nameof(FixtureClass2.Double), "Double2"))
+                    .IgnoreIf(nameof(FixtureClass2.Test1), (y,p) => !y.Test1))
                 .WriteTo.Sink<SinkFixture>()
                 .CreateLogger();
 

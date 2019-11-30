@@ -33,10 +33,6 @@ namespace SerliogTTransformer.Builder
         ITypeTransformerBuilder<T> Mask(string propertyName, int showFirst, int showLast, char mask = '*');
         ITypeTransformerBuilder<T> Mask(Func<PropertyInfo, bool> propertyFunc, int showFirst, int showLast, char mask = '*');
 
-
-        ITypeTransformerBuilder<T> Rename(Expression<Func<T, object>> expression, string newName);
-        ITypeTransformerBuilder<T> Rename(string propertyName, string newName);
-
         ITypeTransformerBuilder<T> Convert(Expression<Func<T, object>> expression, IPropertyValueConverter converter);
         ITypeTransformerBuilder<T> Convert(string propertyName, IPropertyValueConverter converter);
         ITypeTransformerBuilder<T> Convert(Func<PropertyInfo, bool> propertyFunc, IPropertyValueConverter converter);
