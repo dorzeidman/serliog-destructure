@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
 
-    <VersionPrefix>1.0.0</VersionPrefix>
+    <VersionPrefix>1.0.1</VersionPrefix>
     <PackageId>SerliogTTransformer</PackageId>
     <Authors>Dor Zeidman</Authors>
     <Description>Transform Objects control how complex types are logged to Serilog.</Description>
