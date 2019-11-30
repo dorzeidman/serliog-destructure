@@ -16,7 +16,8 @@ namespace SerliogTTransformer.Tests
                 .AddTTransformer()
                 .Destructure.Transform<FixtureClass1>(b => b.Ignore(i => i.String2)
                     .Mask(p => p.String1)
-                    .IgnoreIfNull(x => x.Num2))
+                    .IgnoreIfNull(x => x.Num2)
+                    .Rename(x => x.Num, "NumNew"))
                 .Destructure.Transform<FixtureClass2>(b => b
                     .Ignore(x => x.Double)
                     .Mask(p => p.Phone, 3, 3)
@@ -51,7 +52,7 @@ namespace SerliogTTransformer.Tests
             Assert.Contains(propValue.Properties, p => p.Name == nameof(FixtureClass1.String1));
             Assert.Equal(new ScalarValue("***"), propValue.Properties
                 .First(x => x.Name == nameof(FixtureClass1.String1)).Value);
-            Assert.Contains(propValue.Properties, p => p.Name == nameof(FixtureClass1.Num));
+            Assert.Contains(propValue.Properties, p => p.Name == "NumNew");
             Assert.DoesNotContain(propValue.Properties, p => p.Name == nameof(FixtureClass1.Num2));
 
             //FixtureClass2

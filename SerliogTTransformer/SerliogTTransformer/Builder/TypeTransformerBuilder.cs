@@ -130,6 +130,18 @@ namespace SerliogTTransformer.Builder
             return this;
         }
 
+        public ITypeTransformerBuilder<T> Rename(Expression<Func<T, object>> expression, string newName)
+        {
+            UpdateProperty(expression, t => t.ConvertedName = newName);
+            return this;
+        }
+
+        public ITypeTransformerBuilder<T> Rename(string propertyName, string newName)
+        {
+            UpdateProperty(propertyName, t => t.ConvertedName = newName);
+            return this;
+        }
+
         public ITypeTransformerBuilder<T> Convert(Expression<Func<T, object>> expression, 
             IPropertyValueConverter converter)
         {
