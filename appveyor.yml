@@ -13,4 +13,4 @@ deploy:
     secure: YSmZjTq4KgxY4YlLZm9utXH4FkBxVvfhTdLPhFoZ24YDyE+Re32Tg5p9Ra//euX1
   skip_symbols: true
   on:
-    branch: /^(master|development)$/
+    branch: master
