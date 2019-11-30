@@ -1,13 +1,12 @@
 ﻿using SerliogTTransformer.Converter;
-using SerliogTTransformer.Property;
 using Xunit;
 
-namespace SerliogDestructure.Tests.Property
+namespace SerliogTTransformer.Tests.Converter
 {
-    public class SimplePropertyMaskValueTests
+    public class SimpleMaskValueConverterTests
     {
         [Fact]
-        public void GetValue_AnyValue_Return3MaskChars()
+        public void Convert_AnyValue_Return3MaskChars()
         {
             var propMask = new SimpleMaskValueConverter('*');
             var maskValue = propMask.Convert("sadasfdsfs");

@@ -8,7 +8,7 @@ namespace SerliogTTransformer.Property
 {
     internal static class PropertyFinder
     {
-        internal static IEnumerable<PropertyInfo> GetPropertiesRecursive(Type type)
+        internal static IEnumerable<PropertyInfo> GetAll(Type type)
         {
             var seenNames = new HashSet<string>();
 

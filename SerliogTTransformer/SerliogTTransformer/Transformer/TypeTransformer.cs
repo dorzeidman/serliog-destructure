@@ -17,7 +17,7 @@ namespace SerliogTTransformer.Transformer
         {
             _type = type;
             _ignoreAllNulls = ignoreAllNulls;
-            _propertyTransformers = propertyTransformers;
+            _propertyTransformers = propertyTransformers ?? new Dictionary<PropertyInfo, IPropertyTransformer>();
         }
 
         public TransformedObject Transform(object value)

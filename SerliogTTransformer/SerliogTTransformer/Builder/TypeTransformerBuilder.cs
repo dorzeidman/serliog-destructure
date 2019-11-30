@@ -17,7 +17,7 @@ namespace SerliogTTransformer.Builder
 
         public TypeTransformerBuilder()
         {
-            _propertyTransformers = PropertyFinder.GetPropertiesRecursive(typeof(T))
+            _propertyTransformers = PropertyFinder.GetAll(typeof(T))
                 .ToDictionary(x => x, x => new PropertyTransformerBuilder());
         }
 

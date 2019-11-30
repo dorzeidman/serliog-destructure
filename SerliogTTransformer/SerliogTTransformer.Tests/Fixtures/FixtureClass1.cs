@@ -1,10 +1,14 @@
-﻿namespace SerliogDestructure.Tests.Fixtures
+﻿namespace SerliogTTransformer.Tests.Fixtures
 {
-    class FixtureClass1
+    class FixtureClassBase
     {
         public int Num { get; set; }
         public string String1 { get; set; }
         public string String2 { get; set; }
+    }
+
+    class FixtureClass1 : FixtureClassBase
+    {
         public FixtureClass2 Class2 { get; set; }
         public FixtureClass3 Class3 { get; set; }
 

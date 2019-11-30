@@ -2,7 +2,6 @@
 using System.Linq;
 using Serilog;
 using Serilog.Events;
-using SerliogDestructure.Tests.Fixtures;
 using SerliogTTransformer.Tests.Fixtures;
 using Xunit;
 

@@ -1,13 +1,12 @@
 ﻿using SerliogTTransformer.Converter;
-using SerliogTTransformer.Property;
 using Xunit;
 
-namespace SerliogDestructure.Tests.Property
+namespace SerliogTTransformer.Tests.Converter
 {
-    public class PropertyMaskValueTests
+    public class ComplexMaskValueConverterTests
     {
         [Fact]
-        public void GetValue_ShowFirstAndLast0_ReturnMaskByStringLength()
+        public void Convert_ShowFirstAndLast0_ReturnMaskByStringLength()
         {
             var propMask = new ComplexMaskValueConverter('*', 0, 0);
             var propValue = "sadasfdsfs";
@@ -19,7 +18,7 @@ namespace SerliogDestructure.Tests.Property
         }
 
         [Fact]
-        public void GetValue_ShowFirstAndLastTooLong_ReturnEntireString()
+        public void Convert_ShowFirstAndLastTooLong_ReturnEntireString()
         {
             var propMask = new ComplexMaskValueConverter('*', 5, 6);
             var propValue = "sadasfdsfs";
@@ -30,7 +29,7 @@ namespace SerliogDestructure.Tests.Property
         }
 
         [Fact]
-        public void GetValue_ShowFirstOnly_ReturnFirst3CharsAndMaskAfter()
+        public void Convert_ShowFirstOnly_ReturnFirst3CharsAndMaskAfter()
         {
             var propMask = new ComplexMaskValueConverter('*', 3, 0);
             var propValue = "abcdef";
@@ -41,7 +40,7 @@ namespace SerliogDestructure.Tests.Property
         }
 
         [Fact]
-        public void GetValue_ShowLastOnly_ReturnFirstMaskThan3Chars()
+        public void Convert_ShowLastOnly_ReturnFirstMaskThan3Chars()
         {
             var propMask = new ComplexMaskValueConverter('*', 0, 3);
             var propValue = "abcdef";
@@ -51,7 +50,7 @@ namespace SerliogDestructure.Tests.Property
             Assert.Equal("***def", maskValue);
         }
         [Fact]
-        public void GetValue_ShowFirstAndLast_ReturnFirst3CharsThanMaskThanLast3Chars()
+        public void Convert_ShowFirstAndLast_ReturnFirst3CharsThanMaskThanLast3Chars()
         {
             var propMask = new ComplexMaskValueConverter('*', 3, 3);
             var propValue = "abcdefgh";
