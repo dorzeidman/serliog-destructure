@@ -2,6 +2,14 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+
+    <VersionPrefix>1.0.0</VersionPrefix>
+    <PackageId>SerliogTTransformer</PackageId>
+    <Authors>Dor Zeidman</Authors>
+    <Description>Transform Objects control how complex types are logged to Serilog.</Description>
+    <PackageProjectUrl>https://github.com/dorzeidman/serliog-ttransformer</PackageProjectUrl>
+    <PackageLicenseUrl>http://www.apache.org/licenses/LICENSE-2.0</PackageLicenseUrl>
+    <PackageTags>serilog;ttransformer</PackageTags>
   </PropertyGroup>
 	
   <ItemGroup>
