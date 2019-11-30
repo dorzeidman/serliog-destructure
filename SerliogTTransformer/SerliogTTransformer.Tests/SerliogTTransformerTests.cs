@@ -52,7 +52,7 @@ namespace SerliogTTransformer.Tests
             Assert.Contains(propValue.Properties, p => p.Name == nameof(FixtureClass1.String1));
             Assert.Equal(new ScalarValue("***"), propValue.Properties
                 .First(x => x.Name == nameof(FixtureClass1.String1)).Value);
-            Assert.Contains(propValue.Properties, p => p.Name == nameof(FixtureClass1.Num));
+            Assert.Contains(propValue.Properties, p => p.Name == "NumNew");
             Assert.DoesNotContain(propValue.Properties, p => p.Name == nameof(FixtureClass1.Num2));
 
             //FixtureClass2
