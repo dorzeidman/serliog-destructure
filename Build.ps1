@@ -1,12 +1,12 @@
 echo "build: Build started"
 
-Push-Location $PSScriptRoot/SerliogTTransformer
+Push-Location $PSScriptRoot
 
-& dotnet restore --no-cache
+& dotnet restore SerliogTTransformer\SerliogTTransformer\SerliogTTransformer.csproj --no-cache
 
-& dotnet build --no-restore -c Release
+& dotnet build SerliogTTransformer\SerliogTTransformer\SerliogTTransformer.csproj --no-restore -c Release -o .\artifacs
 
-& dotnet test -c Release
+& dotnet test SerliogTTransformer\SerliogTTransformer.Tests\SerliogTTransformer.Tests.csproj -c Release
 
 
 Pop-Location
