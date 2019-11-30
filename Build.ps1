@@ -16,6 +16,8 @@ echo "build: Build version suffix is $buildSuffix"
 
 & dotnet restore SerliogTTransformer\SerliogTTransformer\SerliogTTransformer.csproj --no-cache
 
+if($LASTEXITCODE -ne 0) { exit 1 }    
+
 if ($buildSuffix) {
 	& dotnet build SerliogTTransformer\SerliogTTransformer\SerliogTTransformer.csproj --no-restore --version-suffix=$buildSuffix
 } else {
@@ -23,15 +25,15 @@ if ($buildSuffix) {
 }
 if($LASTEXITCODE -ne 0) { exit 1 }    
 
+& dotnet test SerliogTTransformer\SerliogTTransformer.Tests\SerliogTTransformer.Tests.csproj -c Release
+if($LASTEXITCODE -ne 0) { exit 1 }   
+
 if ($suffix) {
 	& dotnet pack SerliogTTransformer\SerliogTTransformer\SerliogTTransformer.csproj -c Release --include-symbols -o ..\..\artifacts --version-suffix=$suffix --no-build
 } else {
 	& dotnet pack SerliogTTransformer\SerliogTTransformer\SerliogTTransformer.csproj -c Release --include-symbols -o ..\..\artifacts --no-build
 }
 if($LASTEXITCODE -ne 0) { exit 1 }   
-
-& dotnet test SerliogTTransformer\SerliogTTransformer.Tests\SerliogTTransformer.Tests.csproj -c Release
-
 
 Pop-Location
 
